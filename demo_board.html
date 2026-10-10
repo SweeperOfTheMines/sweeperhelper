@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Minesweeper Helper — offline practice board</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 30px; font: 16px/1.5 system-ui, sans-serif; background: #f4f6f8; color: #1b2733; }
+main { max-width: 840px; }
+h1 { margin: 0 0 8px; font-size: 28px; }
+p { max-width: 760px; }
+#frame { display: inline-block; padding: 8px; background: #858a90; }
+#board { display: grid; grid-template-columns: repeat(9, 32px); width: 288px; height: 288px; }
+.tile { margin: 0; padding: 0; width: 32px; height: 32px; background: #c0c0c0;
+  border-style: solid; border-width: 3px; border-color: #ffffff #777777 #777777 #ffffff;
+  font: bold 22px/1 Consolas, "Courier New", monospace; text-align: center;
+  display: flex; justify-content: center; align-items: center; cursor: default;
+  border-radius: 0; outline: none; user-select: none; }
+.tile.open { border: 1px solid #999999; }
+.tile.flag { color: #d00022; }
+.tile.mine { color: #000000; }
+.tile.exploded { background: #ef6262; }
+.tile.n1 { color: #0000dd; } .tile.n2 { color: #007b19; }
+.tile.n3 { color: #df0000; } .tile.n4 { color: #000078; }
+.tile.n5 { color: #780000; } .tile.n6 { color: #007878; }
+.tile.n7 { color: #141414; } .tile.n8 { color: #777777; }
+#reset { margin: 16px 0 0; font: inherit; padding: 8px 14px; cursor: pointer; }
+#status { min-height: 26px; font-weight: 600; }
+small { display: block; color: #536272; }
+</style>
+</head>
+<body>
+<main>
+<h1>Offline practice board</h1>
+<p>A fixed <strong>9-row × 9-column</strong> board for learning the helper's setup.
+Left-click to uncover; right-click to flag. One flag and some revealed cells are
+already present. Nothing is sent over the network.</p>
+<p><strong>Select only the 9 × 9 tile grid</strong>, not its thick surrounding frame.
+Start by teaching <strong>C, F, 0, 1 and 2</strong>. Leave the browser zoom unchanged.</p>
+<div id="frame"><div id="board" aria-label="Nine by nine Minesweeper practice board"></div></div>
+<div id="status" aria-live="polite"></div>
+<button id="reset" type="button">Reset practice board</button>
+<p>The helper's first provable, unflagged mine in this starting position is at
+<strong>row 3, column 3</strong> (counting from 1). Use this to check alignment.
+The existing flag is a recognition example, not a solver instruction.</p>
+<small>This practice page is separate from your own Minesweeper game. It is not
+proof that the Windows capture or overlay works on your computer.</small>
+</main>
+<script>
+"use strict";
+const ROWS = 9, COLS = 9;
+const mines = new Set([4, 8, 20, 25, 30, 40, 44, 55, 64, 75]);
+let opened = new Set(), flags = new Set(), lost = false, won = false, exploded = -1;
+const board = document.getElementById("board");
+const status = document.getElementById("status");
+const cells = [];
+function neighbours(i) {
+  const r = Math.floor(i / COLS), c = i % COLS, out = [];
+  for (let rr = Math.max(0, r-1); rr < Math.min(ROWS, r+2); rr++) {
+    for (let cc = Math.max(0, c-1); cc < Math.min(COLS, c+2); cc++) {
+      const j = rr * COLS + cc;
+      if (j !== i) out.push(j);
+    }
+  }
+  return out;
+}
+function count(i) { return neighbours(i).filter(j => mines.has(j)).length; }
+function flood(start) {
+  const stack = [start];
+  while (stack.length) {
+    const i = stack.pop();
+    if (opened.has(i) || flags.has(i) || mines.has(i)) continue;
+    opened.add(i);
+    if (count(i) === 0) stack.push(...neighbours(i));
+  }
+}
+function render() {
+  for (let i = 0; i < ROWS*COLS; i++) {
+    const cell = cells[i];
+    cell.className = "tile";
+    cell.textContent = "";
+    if (lost && mines.has(i)) {
+      cell.classList.add("open", "mine");
+      if (i === exploded) cell.classList.add("exploded");
+      cell.textContent = "*";
+    } else if (opened.has(i)) {
+      const n = count(i);
+      cell.classList.add("open", `n${n}`);
+      if (n) cell.textContent = String(n);
+    } else if (flags.has(i)) {
+      cell.classList.add("flag");
+      cell.textContent = "⚑";
+    }
+    cell.setAttribute("aria-label", `Row ${Math.floor(i/COLS)+1}, column ${i%COLS+1}: ` +
+      (opened.has(i) ? `revealed ${count(i)}` : flags.has(i) ? "flagged" : "covered"));
+  }
+  status.textContent = lost ? "Mine hit. Reset to practise again." : won ?
+    "All safe cells revealed — well done." : `${mines.size} mines total · ${flags.size} flags placed`;
+}
+function reveal(i) {
+  if (lost || won || flags.has(i) || opened.has(i)) return;
+  if (mines.has(i)) { lost = true; exploded = i; }
+  else {
+    flood(i);
+    if (opened.size === ROWS*COLS-mines.size) won = true;
+  }
+  render();
+}
+function toggleFlag(i) {
+  if (lost || won || opened.has(i)) return;
+  if (flags.has(i)) flags.delete(i); else flags.add(i);
+  render();
+}
+for (let i = 0; i < ROWS*COLS; i++) {
+  const cell = document.createElement("button");
+  cell.type = "button";
+  cell.addEventListener("click", () => reveal(i));
+  cell.addEventListener("contextmenu", event => { event.preventDefault(); toggleFlag(i); });
+  cells.push(cell);
+  board.appendChild(cell);
+}
+function reset() {
+  opened = new Set(); flags = new Set([4]);
+  lost = false; won = false; exploded = -1;
+  flood(0);
+  render();
+}
+document.getElementById("reset").addEventListener("click", reset);
+reset();
+</script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+MINESWEEPER HELPER — TEST SCOPE
+Prepared: 9 October 2026
+
+Executed successfully in the preparation environment:
+  35 automated unittest test methods: PASS
+  Python syntax compilation of the application and tests: PASS
+  JavaScript syntax check of the optional demo page: PASS
+
+Core test coverage includes:
+  - Boundary-safe neighbour enumeration.
+  - Direct mine and safe-cell deductions.
+  - A 1-2-1 subset-difference pattern.
+  - No guesses for an ambiguous position.
+  - User flags treated as unconfirmed unknown cells, including wrong flags.
+  - No overlay hints when tiles are unreadable or a mine is revealed.
+  - Contradictory clues and invalid inputs rejected.
+  - Complete exact-search deductions.
+  - Partial search / timeout / component limits never treated as certainty.
+  - No cached deductions carried into another board.
+  - 220 generated 3x3 positions compared with an independent exhaustive reference.
+  - 80 generated potentially inconsistent positions compared with that reference.
+  - Synthetic tile matching, blank-versus-covered distinction, unknown-number rejection.
+  - Multiple visual examples per class, conflicting labels, profile save/load.
+  - Image-grid splitting and a synthetic screenshot-to-deduction pipeline.
+  - A synthetic flag update removes the flagged cell from overlay candidates.
+
+Actual core-test environment:
+  Linux, CPython 3.13.5
+  NumPy 2.3.5
+  OpenCV 4.13.0
+
+The dependency versions in requirements.txt target a reproducible Windows
+installation and differ from the preinstalled numeric/image-library versions
+used for the core tests. Their complete installation was not run here.
+
+NOT executed or verified in this environment:
+  - Windows / Qt GUI startup and interaction.
+  - Windows physical-screen capture via MSS.
+  - Multi-monitor selection and mixed-DPI coordinate alignment on real monitors.
+  - Click-through, always-on-top behaviour and native capture exclusion.
+  - F8/F9 handling on a Windows desktop.
+  - Recognition of the user's particular Minesweeper game/theme.
+  - Browser rendering and live interaction with the optional demo page.
+
+PySide6 and MSS could not be installed in the restricted preparation environment.
+The Windows-specific path was therefore reviewed statically, not desktop-tested.
+Passing the core tests is not an end-to-end Windows validation. Test on the
+included practice board and verify the recognition preview before relying on
+hints. A logical proof is conditional on correct image recognition.
