@@ -17,7 +17,7 @@ Alternatively upload a small MP4 through GitHub's README editor and insert the
 attachment link GitHub returns. Add a static screenshot with alt text as fallback.
 -->
 
-## What it does — and what it does not
+## What it does, and what it does not
 
 The helper reads visible board pixels, uses logical constraints to identify forced
 mines and safe squares, and draws hints in a separate click-through overlay.
