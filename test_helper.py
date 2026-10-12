@@ -11,6 +11,7 @@ from unittest.mock import patch
 import cv2
 import numpy as np
 import minesweeper_helper as h
+import solve_board
 
 
 def brute_force(board):
@@ -57,67 +58,67 @@ class SolverTests(unittest.TestCase):
         self.assertEqual(set(h.neighbours(2, 3, 3)), {1, 4, 5})
 
     def test_no_visible_clues_no_hints(self):
-        result = h.solve_board(np.full((9, 9), h.COVERED))
+        result = solve_board.solve_board(np.full((9, 9), h.COVERED))
         self.assertFalse(result.error)
         self.assertEqual(result.mines, set())
         self.assertEqual(result.safe, set())
 
     def test_single_mine(self):
-        result = h.solve_board(np.array([[1, h.COVERED]]))
+        result = solve_board.solve_board(np.array([[1, h.COVERED]]))
         self.assertEqual(result.mines, {1})
         self.assertFalse(result.error)
 
     def test_single_safe(self):
-        result = h.solve_board(np.array([[0, h.COVERED]]))
+        result = solve_board.solve_board(np.array([[0, h.COVERED]]))
         self.assertEqual(result.safe, {1})
 
     def test_ambiguous_no_guess(self):
-        result = h.solve_board(np.array([[h.COVERED, 1, h.COVERED]]))
+        result = solve_board.solve_board(np.array([[h.COVERED, 1, h.COVERED]]))
         self.assertEqual(result.mines, set())
         self.assertEqual(result.safe, set())
         self.assertFalse(result.error)
 
     def test_one_two_one_pattern(self):
         board = np.array([[1, 2, 1], [h.COVERED] * 3])
-        result = h.solve_board(board)
+        result = solve_board.solve_board(board)
         self.assertEqual(result.mines, {3, 5})
         self.assertEqual(result.safe, {4})
 
     def test_wrong_flag_is_not_assumed_to_be_a_mine(self):
-        result = h.solve_board(np.array([[0, h.FLAG]]))
+        result = solve_board.solve_board(np.array([[0, h.FLAG]]))
         self.assertFalse(result.error)
         self.assertEqual(result.safe, {1})
         self.assertEqual(result.mines, set())
 
     def test_flag_remains_part_of_the_constraint(self):
-        result = h.solve_board(np.array([[h.COVERED, 1, h.FLAG]]))
+        result = solve_board.solve_board(np.array([[h.COVERED, 1, h.FLAG]]))
         self.assertFalse(result.error)
         self.assertEqual(result.mines, set())
         self.assertEqual(result.safe, set())
 
     def test_impossible_clue_discards_hints(self):
-        result = h.solve_board(np.array([[2, h.COVERED]]))
+        result = solve_board.solve_board(np.array([[2, h.COVERED]]))
         self.assertTrue(result.error)
         self.assertFalse(result.mines or result.safe)
 
     def test_conflicting_clues_discards_hints(self):
-        result = h.solve_board(np.array([[0, h.COVERED, 1]]))
+        result = solve_board.solve_board(np.array([[0, h.COVERED, 1]]))
         self.assertTrue(result.error)
         self.assertFalse(result.mines or result.safe)
 
     def test_unknown_tile_halts_entire_board(self):
-        result = h.solve_board(np.array([[1, h.COVERED, h.UNREADABLE]]))
+        result = solve_board.solve_board(np.array([[1, h.COVERED, h.UNREADABLE]]))
         self.assertTrue(result.error)
         self.assertFalse(result.mines or result.safe)
 
     def test_revealed_mine_halts_entire_board(self):
-        result = h.solve_board(np.array([[1, h.COVERED, h.GAME_OVER]]))
+        result = solve_board.solve_board(np.array([[1, h.COVERED, h.GAME_OVER]]))
         self.assertTrue(result.error)
         self.assertFalse(result.mines or result.safe)
 
     def test_bad_inputs(self):
         for board in (np.array([]), np.array([1, 2]), np.array([[9]]), np.array([[1.5]])):
-            self.assertTrue(h.solve_board(board).error)
+            self.assertTrue(solve_board.solve_board(board).error)
 
     def test_exact_search_forces_cells(self):
         constraints = [(frozenset({0, 1}), 1), (frozenset({1, 2}), 1),
@@ -134,18 +135,18 @@ class SolverTests(unittest.TestCase):
                                    time.monotonic() + 1, max_nodes=20)
 
     def test_expired_search_never_returns_false_certainty(self):
-        result = h.solve_board(np.array([[h.COVERED, 1, h.COVERED]]), budget_seconds=0)
+        result = solve_board.solve_board(np.array([[h.COVERED, 1, h.COVERED]]), budget_seconds=0)
         self.assertTrue(result.limited)
         self.assertFalse(result.mines or result.safe)
 
     def test_component_size_limit_never_means_guess(self):
-        result = h.solve_board(np.array([[h.COVERED, 1, h.COVERED]]), max_component=1)
+        result = solve_board.solve_board(np.array([[h.COVERED, 1, h.COVERED]]), max_component=1)
         self.assertTrue(result.limited)
         self.assertFalse(result.mines or result.safe)
 
     def test_search_limit_propagates_as_limited_without_hints(self):
-        with patch.object(h, "_enumerate_component", side_effect=h.SearchLimit):
-            result = h.solve_board(np.array([[h.COVERED, 1, h.COVERED]]))
+        with patch.object(solve_board, "_enumerate_component", side_effect=h.SearchLimit):
+            result = solve_board.solve_board(np.array([[h.COVERED, 1, h.COVERED]]))
         self.assertTrue(result.limited)
         self.assertFalse(result.mines or result.safe)
 
@@ -161,7 +162,7 @@ class SolverTests(unittest.TestCase):
                     board.flat[i] = h.FLAG  # May deliberately be a WRONG flag.
             expected = brute_force(board)
             self.assertIsNotNone(expected)
-            result = h.solve_board(board, budget_seconds=1)
+            result = solve_board.solve_board(board, budget_seconds=1)
             with self.subTest(sample=sample, board=board.tolist()):
                 self.assertFalse(result.error)
                 self.assertEqual((result.mines, result.safe), expected)
@@ -173,7 +174,7 @@ class SolverTests(unittest.TestCase):
             for i in rng.sample(range(9), rng.randrange(1, 6)):
                 board.flat[i] = rng.randrange(4)
             expected = brute_force(board)
-            result = h.solve_board(board, budget_seconds=1)
+            result = solve_board.solve_board(board, budget_seconds=1)
             if expected is None:
                 self.assertTrue(result.error, board.tolist())
             else:
@@ -181,8 +182,8 @@ class SolverTests(unittest.TestCase):
                 self.assertEqual((result.mines, result.safe), expected)
 
     def test_deductions_are_recomputed_not_cached_between_boards(self):
-        before = h.solve_board(np.array([[1, h.COVERED]]))
-        after = h.solve_board(np.array([[0, h.COVERED]]))
+        before = solve_board.solve_board(np.array([[1, h.COVERED]]))
+        after = solve_board.solve_board(np.array([[0, h.COVERED]]))
         self.assertEqual(before.mines, {1})
         self.assertEqual(after.mines, set())
         self.assertEqual(after.safe, {1})

@@ -1,0 +1,31 @@
+# Merge with an existing .gitignore; do not overwrite project-specific entries.
+.venv/
+minebotenv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local secrets / developer state
+.env
+.env.*
+!.env.example
+.vscode/
+.idea/
+profile.json
+
+# Generated distributions; attach released packages to GitHub Releases instead.
+build/
+dist/
+*.egg-info/
+
+# Local logs and OS metadata
+*.log
+.DS_Store
+Thumbs.db
+
+# Deliberately do NOT ignore test_data/ or intentional media/ assets.

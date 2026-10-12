@@ -1,0 +1,51 @@
+name: Bug report
+description: Report a recognition, overlay or installation problem.
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Share the smallest useful example. Crop screenshots to the board and remove private information.
+        When hints look wrong, disable the overlay while investigating rather than continuing to rely on them.
+  - type: input
+    id: version
+    attributes:
+      label: Release or commit
+      placeholder: "For example, the release tag or commit hash; not just latest."
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Your setup
+      description: Windows and Python versions, game/theme, rows and columns, monitor resolution/scaling, browser zoom, capture mode.
+      placeholder: "List what you know; write unknown for anything you cannot find."
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where is the problem?
+      options:
+        - Installation or startup
+        - Tile recognition
+        - Mine or safe-square deduction
+        - Overlay position or click-through
+        - Capture or flicker
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Describe what you did, what happened and what you expected.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Preview, status message and cropped board
+      description: Paste the relevant error/status text and drag in an image of just the board where useful. Remove private data first.
+    validations:
+      required: false
