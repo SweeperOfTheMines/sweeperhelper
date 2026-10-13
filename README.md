@@ -14,14 +14,11 @@ Its deductions depend on correct recognition of the visible board.
    ```powershell
    .\.venv\Scripts\python.exe minesweeper_helper.py
    ```
-
-<<<<<<< HEAD
 4. Leave **Classic grey tiles: recognise automatically (no teaching needed)**
    checked. Select the complete grid, start monitoring, check the preview labels,
    and enable the mine overlay. Teaching is optional, not a required setup step.
-=======
+
 ## What it does, and what it does not
->>>>>>> 09d4173b062d9b3a2942bb378a8a2084f067ae74
 
 For the screenshot supplied with this update, the board is **16 rows by 30
 columns**. The timer, mine counter, smiley button and decorative frame must NOT
