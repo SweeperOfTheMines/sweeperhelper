@@ -1,49 +1,80 @@
-MINESWEEPER HELPER — TEST SCOPE
+MINESWEEPER HELPER v2 — ACTUAL TEST SCOPE
 Prepared: 9 October 2026
 
-Executed successfully in the preparation environment:
-  35 automated unittest test methods: PASS
-  Python syntax compilation of the application and tests: PASS
-  JavaScript syntax check of the optional demo page: PASS
+Executed successfully:
+  python -m unittest -v test_helper.py test_recognition.py
+  55 test methods: PASS (35 existing + 20 new)
+  Python source/test syntax compilation: PASS
 
-Core test coverage includes:
-  - Boundary-safe neighbour enumeration.
-  - Direct mine and safe-cell deductions.
-  - A 1-2-1 subset-difference pattern.
-  - No guesses for an ambiguous position.
-  - User flags treated as unconfirmed unknown cells, including wrong flags.
-  - No overlay hints when tiles are unreadable or a mine is revealed.
-  - Contradictory clues and invalid inputs rejected.
-  - Complete exact-search deductions.
-  - Partial search / timeout / component limits never treated as certainty.
-  - No cached deductions carried into another board.
-  - 220 generated 3x3 positions compared with an independent exhaustive reference.
-  - 80 generated potentially inconsistent positions compared with that reference.
-  - Synthetic tile matching, blank-versus-covered distinction, unknown-number rejection.
-  - Multiple visual examples per class, conflicting labels, profile save/load.
-  - Image-grid splitting and a synthetic screenshot-to-deduction pipeline.
-  - A synthetic flag update removes the flagged cell from overlay candidates.
-
-Actual core-test environment:
+Actual environment:
   Linux, CPython 3.13.5
   NumPy 2.3.5
   OpenCV 4.13.0
+  PySide6 and MSS are not installed in this test environment.
+  The Windows requirements file is unchanged from v1 and uses pinned versions
+  different from the numerical/image-library versions available here.
 
-The dependency versions in requirements.txt target a reproducible Windows
-installation and differ from the preinstalled numeric/image-library versions
-used for the core tests. Their complete installation was not run here.
+USER-SUPPLIED SCREENSHOT:
+  Image: 902 x 614 pixels
+  Board crop: x=30..869, y=106..553 (840 x 448 pixels)
+  Grid: 16 rows x 30 columns = 480 tiles, each 28 x 28 pixels
+  No user-labelled examples: all 480 recognised to the checked visible labels.
 
-NOT executed or verified in this environment:
-  - Windows / Qt GUI startup and interaction.
-  - Windows physical-screen capture via MSS.
-  - Multi-monitor selection and mixed-DPI coordinate alignment on real monitors.
-  - Click-through, always-on-top behaviour and native capture exclusion.
-  - F8/F9 handling on a Windows desktop.
-  - Recognition of the user's particular Minesweeper game/theme.
-  - Browser rendering and live interaction with the optional demo page.
+  Visible labels:
+    Covered: 149; flags: 64; revealed empty: 57;
+    1: 92; 2: 73; 3: 36; 4: 7; 5: 2.
+  There are no actual 6, 7 or 8 clues in this screenshot.
 
-PySide6 and MSS could not be installed in the restricted preparation environment.
-The Windows-specific path was therefore reviewed statically, not desktop-tested.
-Passing the core tests is not an end-to-end Windows validation. Test on the
-included practice board and verify the recognition preview before relying on
-hints. A logical proof is conditional on correct image recognition.
+ROBUSTNESS TESTS ON THIS SAME SCENE:
+  - All 25 combinations of dx/dy from -2 through +2 source pixels:
+    all 480 labels match in each variant.
+  - Resizing by 0.5, 0.75, 1.25, 1.5 and 2.0 using nearest-neighbour,
+    bilinear and area interpolation: all 480 labels match in each variant.
+  - Four moderate brightness/contrast modifications: all labels match.
+  - Gaussian pixel noise with sigma 2, 5 and 10 RGB levels: all labels match.
+  - 3 x 3 Gaussian blur with sigma 0.4, 0.6, 0.8 and 1.0: all labels match.
+  - Additional irregular 0.65-scale area-resampled image: 479 correct,
+    1 unreadable (a 5), 0 incorrect labels. Hints are withheld for that board.
+  - Automatic mode disabled, with one taught example for each visible label:
+    all 480 labels match using the new tolerant template matcher.
+  - Recognised screenshot clues pass the existing logical consistency checks.
+
+These are development/regression checks. The screenshot was used while tuning
+classic recognition. Its modified copies are NOT independent real-world scenes,
+and this is not a statistical accuracy guarantee for other boards or themes.
+
+ADDITIONAL SYNTHETIC RECOGNITION TESTS:
+  - 1 through 8 in two OpenCV-rendered fonts with the classic palette.
+  - Covered versus revealed-empty versus red-cloth/black-pole flag.
+  - Flat flag not misread as a red 3.
+  - Eight black/grey mine-icon combinations (spikes and glints) remain unreadable,
+    rather than becoming a 7, 8, or zero.
+  - Covered question marks/X, a solid red rectangle and exploded red background
+    are not treated as usable clues.
+  - Unknown tiles continue to suppress the solver's entire hint set.
+  - Small shifts and brightness offsets accepted by learned-template matching.
+  - Ambiguous taught appearances still rejected.
+  - Automatic-mode cloning and learned fallback for a non-classic tile.
+
+EXISTING CORE TESTS ALSO PASS:
+  - Neighbours, forced mine/safe rules, subset deductions, no ambiguous guesses.
+  - Flags remain unknown variables, including deliberately wrong flags.
+  - Contradictions / unreadable tiles / revealed mines suppress hints.
+  - Bounded exact search never promotes a partial search to certainty.
+  - 220 generated 3x3 boards compared with exhaustive reference solutions.
+  - 80 generated possibly inconsistent boards compared with that reference.
+  - Saved-template round trip, duplicates, conflicting labels, cloning.
+  - Grid splitting and synthetic screenshot-to-deduction / flag-update pipelines.
+
+NOT VERIFIED HERE:
+  - Windows GUI startup and actual checkbox/button interactions.
+  - Real-time screen capture, mixed-DPI monitor mapping, click-through.
+  - Windows capture exclusion and actual flicker/display duration.
+  - Live game interaction, animations, game-over rendering, browser demo rendering.
+  - Real game 6/7/8 glyphs; only synthetic examples of those digits were tested.
+
+The earlier timer-restart change is present in refresh_overlay(), and the scan
+range is 150..10000 ms with a 3000 ms default. Actual Windows visual timing
+remains unverified. The solver and its stale-hint clearing logic are retained.
+
+See test_run.txt for the actual 55-test execution output.
