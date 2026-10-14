@@ -1,4 +1,4 @@
-# Minesweeper Helper v2 — automatic classic recognition
+# Minesweeper Helper: automatic pattern recognition
 
 A Windows screen-only, click-through Minesweeper assistant. It does not inspect
 game memory, send clicks, assume flags are correct, or make probabilistic guesses.
@@ -20,12 +20,14 @@ Its deductions depend on correct recognition of the visible board.
 
 ## What it does, and what it does not
 
-For the screenshot supplied with this update, the board is **16 rows by 30
-columns**. The timer, mine counter, smiley button and decorative frame must NOT
+The helper reads visible board pixels, uses logical constraints to identify forced mines and safe squares, and draws hints in a separate click-through overlay. It does not read game memory, play moves for you, or label a probabilistic guess as certain. Your flags are recognised, but are not assumed to prove a mine.
+
+Every deduction depends on a correctly recognised, complete board. Check the preview before enabling the overlay. An ambiguous board can legitimately have no hints; bounded search can also miss deductions. Unreadable cells and detected contradictions stop hints rather than forcing a label. 
+
+The timer, mine counter, smiley button and decorative frame must NOT
 be inside the selected grid. Keep the entire board on one monitor.
 
-The replacement includes the previously discussed overlay-timer restart. The
-scan interval now ranges from 150 to 10,000 ms, with a default of **3,000 ms**.
+The scan interval now ranges from 150 to 10,000 ms, with a default of **250 ms**.
 Set it to your preferred value in the control window. Longer intervals mean
 slower responses to board changes. Other local edits you made to the old script
 are not automatically merged: keep the backup so you can copy them across.
