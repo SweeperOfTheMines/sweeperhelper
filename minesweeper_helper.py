@@ -151,8 +151,8 @@ def _enumerate_component(
 
 
 def solve_board(
-    board: np.ndarray, *, budget_seconds: float = 0.18,
-    max_component: int = 22, max_constraints: int = 2500,
+    board: np.ndarray, *, budget_seconds: float = 0.5,
+    max_component: int = 22, max_constraints: int = 4500,
 ) -> SolveResult:
     """Infer certain cells using propagation, subsets, then bounded exact search.
 
@@ -1033,7 +1033,7 @@ def run_gui() -> int:
             for index in self.safe:
                 r, c = divmod(index, self.region.cols)
                 p.setBrush(Qt.BrushStyle.NoBrush)
-                p.setPen(QPen(QColor("#00e68a"), max(2.0, min(cw, ch) * 0.07)))
+                p.setPen(QPen(QColor("#00eeff"), max(2.0, min(cw, ch) * 0.1)))
                 p.drawRect(QRectF(self.box.x() + (c + 0.2) * cw,
                                  self.box.y() + (r + 0.2) * ch, cw * 0.6, ch * 0.6))
             for index in self.mines:
@@ -1174,7 +1174,7 @@ def run_gui() -> int:
             options.addWidget(QLabel("Scan interval (ms)"))
             self.interval = QSpinBox()
             self.interval.setRange(150, 10000)
-            self.interval.setValue(3000)
+            self.interval.setValue(250)
             self.interval.valueChanged.connect(lambda ms: self.scan.setInterval(ms)
                                                if hasattr(self, "scan") else None)
             options.addWidget(self.interval)
@@ -1270,7 +1270,7 @@ def run_gui() -> int:
             if self.region is not None:
                 self.stop()
                 self.region = None
-                self.mine_overlay.setChecked(False)
+                self.mine_overlay.setChecked(True)
                 self.start_button.setEnabled(False)
                 self.teach_button.setEnabled(False)
                 self.region_label.setText("Rows, columns or monitor changed: select the area again.")
@@ -1294,7 +1294,7 @@ def run_gui() -> int:
                 return
             self.stop()
             self.busy = True
-            self.mine_overlay.setChecked(False)
+            self.mine_overlay.setChecked(True)
             self.hide()
             QTimer.singleShot(180, self._finish_selection)
 
@@ -1350,7 +1350,7 @@ def run_gui() -> int:
                 return
             self.stop()
             self.busy = True
-            self.mine_overlay.setChecked(False)
+            self.mine_overlay.setChecked(True)
             self.hide()
             QTimer.singleShot(180, self._finish_teaching)
 
